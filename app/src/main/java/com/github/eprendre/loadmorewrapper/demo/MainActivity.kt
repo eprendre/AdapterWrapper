@@ -3,6 +3,7 @@ package com.github.eprendre.loadmorewrapper.demo
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import com.github.eprendre.loadmorewrapper.LoadMoreWrapper
@@ -21,11 +22,13 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
       Thread.sleep(1000)
       val next = items.last().position + 1
       val newItems = (next..(next + 9)).map { MyItem(it) }
+
+      val oldItems = ArrayList(items)
       items.addAll(newItems)
       count++
 
       uiThread {
-        loadMoreWrapper.notifyDataSetChanged()
+        DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
         if (count >= 3) {
           loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_DONE)
         } else {
@@ -52,6 +55,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     swipeRefreshLayout.isRefreshing = true
     doAsync {
       Thread.sleep(1000)
+      val oldItems = ArrayList(items)
       items.clear()
       items.addAll((1..20).map { MyItem(it) })
       count = 1
@@ -59,7 +63,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
       uiThread {
         swipeRefreshLayout.isRefreshing = false
 
-        loadMoreWrapper.notifyDataSetChanged()
+        DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
         loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
       }
     }
