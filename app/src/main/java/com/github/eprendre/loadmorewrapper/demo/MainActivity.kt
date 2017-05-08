@@ -28,12 +28,16 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
       count++
 
       uiThread {
-        DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
-        if (count >= 3) {
-          loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_DONE)
+
+        val type = if (count >= 3) {
+          LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_DONE
         } else {
-          loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
+          LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE
         }
+
+        loadMoreWrapper.notifyData({
+          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
+        }, type)
       }
     }
   }
@@ -48,23 +52,28 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
     recyclerView.adapter = loadMoreWrapper
 
+    loadFullScreen()
+  }
+
+  fun loadFullScreen() {
+    loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN)
     onRefresh()
   }
 
   override fun onRefresh() {
-    swipeRefreshLayout.isRefreshing = true
     doAsync {
       Thread.sleep(1000)
+      val newItems = (1..20).map { MyItem(it) }
       val oldItems = ArrayList(items)
       items.clear()
-      items.addAll((1..20).map { MyItem(it) })
+      items.addAll(newItems)
       count = 1
 
       uiThread {
         swipeRefreshLayout.isRefreshing = false
-
-        DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
-        loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
+        loadMoreWrapper.notifyData({
+          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
+        }, LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
       }
     }
   }

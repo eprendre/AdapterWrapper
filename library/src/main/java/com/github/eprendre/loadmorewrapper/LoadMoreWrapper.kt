@@ -14,7 +14,8 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     val ITEM_TYPE_LOAD_MORE_LOADING = -1000
     val ITEM_TYPE_LOAD_MORE_DONE = -1001
     val ITEM_TYPE_LOAD_MORE_ERROR = -1002
-    val ITEM_TYPE_LOAD_MORE_DISABLE = -1003
+    val ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN = -1003
+    val ITEM_TYPE_LOAD_MORE_DISABLE = -1004
   }
 
   private var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
@@ -22,7 +23,7 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
   fun changeItemType(type: Int) {
     Handler().post {
       val isInsert = (itemType == ITEM_TYPE_LOAD_MORE_DISABLE && type != itemType)
-      if (type >= ITEM_TYPE_LOAD_MORE_ERROR && type <= ITEM_TYPE_LOAD_MORE_IDLE) {
+      if (type >= ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN && type <= ITEM_TYPE_LOAD_MORE_IDLE) {
         itemType = type
         if (isInsert) {
           notifyItemInserted(itemCount - 1)
@@ -38,6 +39,14 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     }
   }
 
+  fun notifyData(notifyAdapter: ()-> Unit, finalItemType: Int) {
+    if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN) {
+      changeItemType(ITEM_TYPE_LOAD_MORE_DISABLE)
+    }
+    Handler().post { notifyAdapter() }
+    changeItemType(finalItemType)
+  }
+
   override fun getItemViewType(position: Int): Int {
     if (isPositionLoadMore(position)) {
       return itemType
@@ -49,6 +58,7 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     return when (viewType) {
       ITEM_TYPE_LOAD_MORE_IDLE -> LoadMoreViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_LOADING -> LoadMoreViewHolder(parent!!)
+      ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN -> LoadMoreFullScreenViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_DONE -> LoadMoreDoneViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_ERROR -> LoadMoreErrorViewHolder(parent!!)
       else -> innerAdapter.onCreateViewHolder(parent, viewType)
@@ -115,6 +125,7 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
           val type = getItemViewType(position)
           return if (type == ITEM_TYPE_LOAD_MORE_IDLE ||
               type == ITEM_TYPE_LOAD_MORE_LOADING ||
+              type == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN ||
               type == ITEM_TYPE_LOAD_MORE_DONE ||
               type == ITEM_TYPE_LOAD_MORE_ERROR)
             manager.spanCount else 1
