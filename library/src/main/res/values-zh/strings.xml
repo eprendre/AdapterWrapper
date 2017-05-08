@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LoadMoreWrapper</string>
+    <string name="app_name">AdapterWrapper</string>
     <string name="item_done">加载完成</string>
     <string name="item_loading">正在加载…</string>
     <string name="error_net_error_click_retry">网络不给力,点击重试</string>

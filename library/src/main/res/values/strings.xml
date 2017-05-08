@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LoadMoreWrapper</string>
+    <string name="app_name">AdapterWrapper</string>
     <string name="item_loading">Loading…</string>
     <string name="item_done">Finished</string>
     <string name="error_net_error_click_retry">Network connection failed, click to retry</string>

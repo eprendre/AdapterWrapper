@@ -6,7 +6,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.github.eprendre.loadmorewrapper.demo"
+        applicationId "com.github.eprendre.adapterwrapper.demo"
         minSdkVersion 9
         targetSdkVersion 25
         versionCode 1

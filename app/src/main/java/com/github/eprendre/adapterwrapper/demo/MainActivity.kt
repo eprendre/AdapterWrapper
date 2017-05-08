@@ -1,4 +1,4 @@
-package com.github.eprendre.loadmorewrapper.demo
+package com.github.eprendre.adapterwrapper.demo
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
-import com.github.eprendre.loadmorewrapper.LoadMoreWrapper
+import com.github.eprendre.adapterwrapper.AdapterWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -15,9 +15,9 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   val items by lazy { ArrayList<MyItem>() }
   val adapter by lazy { MyAdapter(items) }
   var count = 1
-  val loadMoreWrapper by lazy { LoadMoreWrapper(adapter, loadMoreListener) }
+  val adapterWrapper by lazy { AdapterWrapper(adapter, loadMoreListener) }
 
-  val loadMoreListener: (loadMoreWrapper: LoadMoreWrapper) -> Unit = {
+  val loadMoreListener: (adapterWrapper: AdapterWrapper) -> Unit = {
     doAsync {
       Thread.sleep(1000)
       val next = items.last().position + 1
@@ -30,13 +30,13 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
       uiThread {
 
         val type = if (count >= 3) {
-          LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_DONE
+          AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
         } else {
-          LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE
+          AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
         }
 
-        loadMoreWrapper.notifyData({
-          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
+        adapterWrapper.notifyData({
+          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
         }, type)
       }
     }
@@ -50,13 +50,13 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
     recyclerView.layoutManager = LinearLayoutManager(this)
     recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-    recyclerView.adapter = loadMoreWrapper
+    recyclerView.adapter = adapterWrapper
 
     loadFullScreen()
   }
 
   fun loadFullScreen() {
-    loadMoreWrapper.changeItemType(LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN)
+    adapterWrapper.changeItemType(AdapterWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN)
     onRefresh()
   }
 
@@ -71,9 +71,9 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
       uiThread {
         swipeRefreshLayout.isRefreshing = false
-        loadMoreWrapper.notifyData({
-          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(loadMoreWrapper)
-        }, LoadMoreWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
+        adapterWrapper.notifyData({
+          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
+        }, AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
       }
     }
   }

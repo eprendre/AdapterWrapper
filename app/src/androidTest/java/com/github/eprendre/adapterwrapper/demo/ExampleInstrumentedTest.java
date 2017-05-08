@@ -1,4 +1,4 @@
-package com.github.eprendre.loadmorewrapper.demo;
+package com.github.eprendre.adapterwrapper.demo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.github.eprendre.loadmorewrapper.demo", appContext.getPackageName());
+        assertEquals("com.github.eprendre.adapterwrapper.demo", appContext.getPackageName());
     }
 }

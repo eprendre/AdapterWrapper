@@ -1,4 +1,4 @@
-package com.github.eprendre.loadmorewrapper.demo
+package com.github.eprendre.adapterwrapper.demo
 
 /**
  * Created by eprendre on 07/05/2017.

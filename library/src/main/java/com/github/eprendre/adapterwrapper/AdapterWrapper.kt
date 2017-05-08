@@ -1,4 +1,4 @@
-package com.github.eprendre.loadmorewrapper
+package com.github.eprendre.adapterwrapper
 
 import android.os.Handler
 import android.support.v7.widget.GridLayoutManager
@@ -7,8 +7,8 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.ViewGroup
 
 @Suppress("UNCHECKED_CAST")
-class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-                      val loadMore: (loadMoreWrapper: LoadMoreWrapper) -> Unit) : BaseWrapper(inner as RecyclerView.Adapter<RecyclerView.ViewHolder>) {
+class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
+                     val loadMore: (adapterWrapper: AdapterWrapper) -> Unit) : BaseWrapper(inner as RecyclerView.Adapter<RecyclerView.ViewHolder>) {
   companion object {
     val ITEM_TYPE_LOAD_MORE_IDLE = -999
     val ITEM_TYPE_LOAD_MORE_LOADING = -1000
@@ -58,7 +58,7 @@ class LoadMoreWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     return when (viewType) {
       ITEM_TYPE_LOAD_MORE_IDLE -> LoadMoreViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_LOADING -> LoadMoreViewHolder(parent!!)
-      ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN -> LoadMoreFullScreenViewHolder(parent!!)
+      ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN -> LoadingFullScreenViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_DONE -> LoadMoreDoneViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_ERROR -> LoadMoreErrorViewHolder(parent!!)
       else -> innerAdapter.onCreateViewHolder(parent, viewType)

@@ -1,4 +1,4 @@
-package com.github.eprendre.loadmorewrapper.demo;
+package com.github.eprendre.adapterwrapper.demo;
 
 import org.junit.Test;
 
