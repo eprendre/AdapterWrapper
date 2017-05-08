@@ -39,7 +39,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     }
   }
 
-  fun notifyData(notifyAdapter: ()-> Unit, finalItemType: Int) {
+  fun notifyData(notifyAdapter: () -> Unit, finalItemType: Int) {
     if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN) {
       changeItemType(ITEM_TYPE_LOAD_MORE_DISABLE)
     }
@@ -148,7 +148,10 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
 
   fun isLoadMoreHolder(holder: RecyclerView.ViewHolder?): Boolean {
     if (isPositionLoadMore(holder!!.layoutPosition) ||
-        (holder is LoadMoreViewHolder || holder is LoadMoreDoneViewHolder || holder is LoadMoreErrorViewHolder)) {
+        (holder is LoadMoreViewHolder ||
+            holder is LoadMoreDoneViewHolder ||
+            holder is LoadingFullScreenViewHolder ||
+            holder is LoadMoreErrorViewHolder)) {
       return true
     }
     return false

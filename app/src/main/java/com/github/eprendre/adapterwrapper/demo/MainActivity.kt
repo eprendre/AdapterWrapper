@@ -14,28 +14,26 @@ import org.jetbrains.anko.uiThread
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   val items by lazy { ArrayList<MyItem>() }
   val adapter by lazy { MyAdapter(items) }
-  var count = 1
+  var maxCount = 50
   val adapterWrapper by lazy { AdapterWrapper(adapter, loadMoreListener) }
+  val latency = 1000L
 
   val loadMoreListener: (adapterWrapper: AdapterWrapper) -> Unit = {
     doAsync {
-      Thread.sleep(1000)
+      Thread.sleep(latency)
       val next = items.last().position + 1
       val newItems = (next..(next + 9)).map { MyItem(it) }
 
-      val oldItems = ArrayList(items)
-      items.addAll(newItems)
-      count++
-
       uiThread {
-
-        val type = if (count >= 3) {
+        val type = if (items.size >= maxCount) {
           AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
         } else {
           AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
         }
 
         adapterWrapper.notifyData({
+          val oldItems = ArrayList(items)
+          items.addAll(newItems)
           DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
         }, type)
       }
@@ -62,18 +60,22 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
   override fun onRefresh() {
     doAsync {
-      Thread.sleep(1000)
+      Thread.sleep(latency)
       val newItems = (1..20).map { MyItem(it) }
-      val oldItems = ArrayList(items)
-      items.clear()
-      items.addAll(newItems)
-      count = 1
 
       uiThread {
         swipeRefreshLayout.isRefreshing = false
+        val type = if (items.size >= maxCount) {
+          AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
+        } else {
+          AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
+        }
         adapterWrapper.notifyData({
+          val oldItems = ArrayList(items)
+          items.clear()
+          items.addAll(newItems)
           DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
-        }, AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE)
+        }, type)
       }
     }
   }
