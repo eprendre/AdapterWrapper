@@ -16,39 +16,39 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     val ITEM_TYPE_LOAD_MORE_ERROR = -1002
     val ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN = -1003
     val ITEM_TYPE_LOAD_MORE_EMPTY = -1004
-    val ITEM_TYPE_LOAD_MORE_DISABLE = -1005
+    val ITEM_TYPE_LOAD_MORE_DISABLE = -2000
   }
 
-  private var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
-
-  fun changeItemType(type: Int) {
-    Handler().post {
-      val isInsert = (itemType == ITEM_TYPE_LOAD_MORE_DISABLE && type != itemType)
-      if (type >= ITEM_TYPE_LOAD_MORE_EMPTY && type <= ITEM_TYPE_LOAD_MORE_IDLE) {
-        itemType = type
-        if (isInsert) {
-          notifyItemInserted(itemCount - 1)
+  var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
+    set(value) {
+      Handler().post {
+        val isInsert = (field == ITEM_TYPE_LOAD_MORE_DISABLE && value != field)
+        if (value >= ITEM_TYPE_LOAD_MORE_EMPTY && value <= ITEM_TYPE_LOAD_MORE_IDLE) {
+          field = value
+          if (isInsert) {
+            notifyItemInserted(itemCount - 1)
+          } else {
+            notifyItemChanged(itemCount - 1)
+          }
         } else {
-          notifyItemChanged(itemCount - 1)
-        }
-      } else {
-        if (itemType != ITEM_TYPE_LOAD_MORE_DISABLE) {
-          itemType = ITEM_TYPE_LOAD_MORE_DISABLE
-          notifyItemRemoved(itemCount)
+          if (field != ITEM_TYPE_LOAD_MORE_DISABLE) {
+            field = ITEM_TYPE_LOAD_MORE_DISABLE
+            notifyItemRemoved(itemCount)
+          }
         }
       }
     }
-  }
 
   fun notifyData(notifyAdapter: () -> Int, isRefresh: Boolean) {
     if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN || isRefresh) {
-      changeItemType(ITEM_TYPE_LOAD_MORE_DISABLE)
+      itemType = ITEM_TYPE_LOAD_MORE_DISABLE
     }
     Handler().post {
-     val type = notifyAdapter()
-      changeItemType(type)
+      val type = notifyAdapter()
+      itemType = type
     }
   }
+
   fun notifyData(notifyAdapter: () -> Int) {
     notifyData(notifyAdapter, false)
   }
@@ -91,14 +91,14 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
       when (itemType) {
         ITEM_TYPE_LOAD_MORE_IDLE -> {
           if (holder is LoadMoreViewHolder) {
-            changeItemType(ITEM_TYPE_LOAD_MORE_LOADING)
+            itemType = ITEM_TYPE_LOAD_MORE_LOADING
             loadMore(this)
           }
         }
         ITEM_TYPE_LOAD_MORE_ERROR -> {
           if (holder is LoadMoreErrorViewHolder) {
             holder.setLoadMoreListener {
-              changeItemType(ITEM_TYPE_LOAD_MORE_IDLE)
+              itemType = ITEM_TYPE_LOAD_MORE_IDLE
             }
           }
         }

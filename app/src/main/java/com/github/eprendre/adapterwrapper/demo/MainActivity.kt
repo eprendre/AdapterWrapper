@@ -9,7 +9,9 @@ import android.support.v7.widget.LinearLayoutManager
 import com.github.eprendre.adapterwrapper.AdapterWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
+import java.util.*
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   val items by lazy { ArrayList<MyItem>() }
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   }
 
   fun loadFullScreen() {
-    adapterWrapper.changeItemType(AdapterWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN)
+    adapterWrapper.itemType = AdapterWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN
     onRefresh()
   }
 
@@ -50,11 +52,23 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     doAsync {
       Thread.sleep(latency)
       val newItems = (position..(position + 14)).map { MyItem(it) }
-      position += 15
 //      val newItems = emptyList<MyItem>()
 
       uiThread {
         swipeRefreshLayout.isRefreshing = false
+
+        if (Random().nextInt(2) == 0) {//Error
+          if (isRefresh) {
+            if (adapterWrapper.itemType == AdapterWrapper.ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN) {
+              adapterWrapper.itemType = AdapterWrapper.ITEM_TYPE_LOAD_MORE_DISABLE
+            }
+            toast("refresh error, pull to retry")
+          } else {
+            adapterWrapper.itemType = AdapterWrapper.ITEM_TYPE_LOAD_MORE_ERROR
+          }
+          return@uiThread
+        }
+        position += 15
         adapterWrapper.notifyData({
           val oldItems = ArrayList(items)
           if (isRefresh) {
