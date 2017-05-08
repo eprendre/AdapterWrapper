@@ -14,30 +14,14 @@ import org.jetbrains.anko.uiThread
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   val items by lazy { ArrayList<MyItem>() }
   val adapter by lazy { MyAdapter(items) }
-  var maxCount = 50
+  var maxCount = 40
   val adapterWrapper by lazy { AdapterWrapper(adapter, loadMoreListener) }
   val latency = 1000L
 
+  var position = 1
+
   val loadMoreListener: (adapterWrapper: AdapterWrapper) -> Unit = {
-    doAsync {
-      Thread.sleep(latency)
-      val next = items.last().position + 1
-      val newItems = (next..(next + 9)).map { MyItem(it) }
-
-      uiThread {
-        val type = if (items.size >= maxCount) {
-          AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
-        } else {
-          AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
-        }
-
-        adapterWrapper.notifyData({
-          val oldItems = ArrayList(items)
-          items.addAll(newItems)
-          DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
-        }, type)
-      }
-    }
+    load(false)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,23 +43,32 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
   }
 
   override fun onRefresh() {
+    load(true)
+  }
+
+  fun load(isRefresh: Boolean) {
     doAsync {
       Thread.sleep(latency)
-      val newItems = (1..20).map { MyItem(it) }
+      val newItems = (position..(position + 14)).map { MyItem(it) }
+      position += 15
+//      val newItems = emptyList<MyItem>()
 
       uiThread {
         swipeRefreshLayout.isRefreshing = false
-        val type = if (items.size >= maxCount) {
-          AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
-        } else {
-          AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
-        }
         adapterWrapper.notifyData({
           val oldItems = ArrayList(items)
-          items.clear()
+          if (isRefresh) {
+            items.clear()
+          }
           items.addAll(newItems)
+          val type = when {
+            items.size >= maxCount -> AdapterWrapper.ITEM_TYPE_LOAD_MORE_DONE
+            items.size == 0 -> AdapterWrapper.ITEM_TYPE_LOAD_MORE_EMPTY
+            else -> AdapterWrapper.ITEM_TYPE_LOAD_MORE_IDLE
+          }
           DiffUtil.calculateDiff(DiffCallback(oldItems, items)).dispatchUpdatesTo(adapterWrapper)
-        }, type)
+          return@notifyData type
+        }, isRefresh)
       }
     }
   }

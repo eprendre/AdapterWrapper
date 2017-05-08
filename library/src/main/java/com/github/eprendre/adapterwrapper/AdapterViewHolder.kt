@@ -10,6 +10,9 @@ class LoadMoreViewHolder(parent: ViewGroup) :
 class LoadingFullScreenViewHolder(parent: ViewGroup) :
     RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_loading_fullscreen, parent, false))
 
+class EmptyFullScreenViewHolder(parent: ViewGroup) :
+    RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_loading_empty, parent, false))
+
 class LoadMoreDoneViewHolder(parent: ViewGroup) :
     RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_loading_done, parent, false))
 

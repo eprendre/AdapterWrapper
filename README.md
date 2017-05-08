@@ -15,6 +15,6 @@ allprojects {
 
 ```groovy
 dependencies {
-    compile 'com.github.eprendre:AdapterWrapper:v1.0.1'
+    compile 'com.github.eprendre:AdapterWrapper:v1.0.2'
 }
 ```

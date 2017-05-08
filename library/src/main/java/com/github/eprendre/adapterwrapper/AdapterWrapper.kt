@@ -15,7 +15,8 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     val ITEM_TYPE_LOAD_MORE_DONE = -1001
     val ITEM_TYPE_LOAD_MORE_ERROR = -1002
     val ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN = -1003
-    val ITEM_TYPE_LOAD_MORE_DISABLE = -1004
+    val ITEM_TYPE_LOAD_MORE_EMPTY = -1004
+    val ITEM_TYPE_LOAD_MORE_DISABLE = -1005
   }
 
   private var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
@@ -23,7 +24,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
   fun changeItemType(type: Int) {
     Handler().post {
       val isInsert = (itemType == ITEM_TYPE_LOAD_MORE_DISABLE && type != itemType)
-      if (type >= ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN && type <= ITEM_TYPE_LOAD_MORE_IDLE) {
+      if (type >= ITEM_TYPE_LOAD_MORE_EMPTY && type <= ITEM_TYPE_LOAD_MORE_IDLE) {
         itemType = type
         if (isInsert) {
           notifyItemInserted(itemCount - 1)
@@ -39,12 +40,17 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     }
   }
 
-  fun notifyData(notifyAdapter: () -> Unit, finalItemType: Int) {
-    if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN) {
+  fun notifyData(notifyAdapter: () -> Int, isRefresh: Boolean) {
+    if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN || isRefresh) {
       changeItemType(ITEM_TYPE_LOAD_MORE_DISABLE)
     }
-    Handler().post { notifyAdapter() }
-    changeItemType(finalItemType)
+    Handler().post {
+     val type = notifyAdapter()
+      changeItemType(type)
+    }
+  }
+  fun notifyData(notifyAdapter: () -> Int) {
+    notifyData(notifyAdapter, false)
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -59,6 +65,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
       ITEM_TYPE_LOAD_MORE_IDLE -> LoadMoreViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_LOADING -> LoadMoreViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN -> LoadingFullScreenViewHolder(parent!!)
+      ITEM_TYPE_LOAD_MORE_EMPTY -> EmptyFullScreenViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_DONE -> LoadMoreDoneViewHolder(parent!!)
       ITEM_TYPE_LOAD_MORE_ERROR -> LoadMoreErrorViewHolder(parent!!)
       else -> innerAdapter.onCreateViewHolder(parent, viewType)
@@ -126,6 +133,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
           return if (type == ITEM_TYPE_LOAD_MORE_IDLE ||
               type == ITEM_TYPE_LOAD_MORE_LOADING ||
               type == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN ||
+              type == ITEM_TYPE_LOAD_MORE_EMPTY ||
               type == ITEM_TYPE_LOAD_MORE_DONE ||
               type == ITEM_TYPE_LOAD_MORE_ERROR)
             manager.spanCount else 1
@@ -151,6 +159,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
         (holder is LoadMoreViewHolder ||
             holder is LoadMoreDoneViewHolder ||
             holder is LoadingFullScreenViewHolder ||
+            holder is EmptyFullScreenViewHolder ||
             holder is LoadMoreErrorViewHolder)) {
       return true
     }
