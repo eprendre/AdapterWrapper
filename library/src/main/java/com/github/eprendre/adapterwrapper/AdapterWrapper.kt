@@ -1,6 +1,7 @@
 package com.github.eprendre.adapterwrapper
 
 import android.os.Handler
+import android.os.SystemClock
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
@@ -21,7 +22,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
 
   var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
     set(value) {
-      Handler().post {
+      Handler().postAtTime({
         val isInsert = (field == ITEM_TYPE_LOAD_MORE_DISABLE && value != field)
         if (value >= ITEM_TYPE_LOAD_MORE_EMPTY && value <= ITEM_TYPE_LOAD_MORE_IDLE) {
           field = value
@@ -36,17 +37,17 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
             notifyItemRemoved(itemCount)
           }
         }
-      }
+      }, SystemClock.uptimeMillis() - 10000)
     }
 
   fun notifyData(notifyAdapter: () -> Int, isRefresh: Boolean) {
     if (itemType == ITEM_TYPE_LOAD_MORE_LOADING_FULLSCREEN || isRefresh) {
       itemType = ITEM_TYPE_LOAD_MORE_DISABLE
     }
-    Handler().post {
+    Handler().postAtTime({
       val type = notifyAdapter()
       itemType = type
-    }
+    }, SystemClock.uptimeMillis() - 10000)
   }
 
   fun notifyData(notifyAdapter: () -> Int) {
