@@ -8,8 +8,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.ViewGroup
 
 @Suppress("UNCHECKED_CAST")
-class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-                     val loadMore: (adapterWrapper: AdapterWrapper) -> Unit) : BaseWrapper(inner as RecyclerView.Adapter<RecyclerView.ViewHolder>) {
+class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>) : BaseWrapper(inner as RecyclerView.Adapter<RecyclerView.ViewHolder>) {
   companion object {
     val ITEM_TYPE_LOAD_MORE_IDLE = -999
     val ITEM_TYPE_LOAD_MORE_LOADING = -1000
@@ -19,6 +18,8 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
     val ITEM_TYPE_LOAD_MORE_EMPTY = -1004
     val ITEM_TYPE_LOAD_MORE_DISABLE = -2000
   }
+
+  lateinit var loadMoreListener: () -> Unit //must not be null when triggered
 
   var itemType = ITEM_TYPE_LOAD_MORE_DISABLE
     set(value) {
@@ -93,7 +94,7 @@ class AdapterWrapper(inner: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
         ITEM_TYPE_LOAD_MORE_IDLE -> {
           if (holder is LoadMoreViewHolder) {
             itemType = ITEM_TYPE_LOAD_MORE_LOADING
-            loadMore(this)
+            loadMoreListener.invoke()
           }
         }
         ITEM_TYPE_LOAD_MORE_ERROR -> {
